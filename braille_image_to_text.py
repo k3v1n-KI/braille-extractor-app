@@ -180,38 +180,6 @@ def calculate_spacing(boundingBoxes, diameter, xs):
     
   return linesV, vertical_space
 
-def map_letters(boundingBoxes, diameter, vertical_space, linesV):
-    # Convert bounding boxes to a list and add a large placeholder at the end
-    boxes = list(boundingBoxes)
-    boxes.append((100000, 0))  # A dummy bounding box to handle edge case
-    
-    # Initialize the list of dots as an empty list inside a list
-    dots = [[]]
-    
-    # Determine the minimum y-diameter based on vertical spacing
-    for y in sorted(list(set(vertical_space))):
-        if y > 1.3 * diameter:  # If vertical spacing exceeds 1.3 * diameter
-            min_y_diameter = y * 1.5  # Set the minimum y-diameter to 1.5 times the spacing
-            break  # Exit the loop once the condition is satisfied
-    
-    # Fetching dots line by line by comparing bounding box positions
-    for b in range(len(boxes) - 1):
-        if boxes[b][0] < boxes[b+1][0]:  # If the current box is to the left of the next one
-            dots[-1].append(boxes[b][0])  # Add the x-coordinate of the current box to the current line of dots
-        else:
-            # If the difference in y-coordinate between consecutive boxes is less than min_y_diameter,
-            # it means the dots are part of the same line, so continue adding to the same line
-            if abs(boxes[b+1][1] - boxes[b][1]) < min_y_diameter:
-                dots[-1].append(boxes[b][0])
-                dots.append([])  # Start a new line of dots
-            else:
-                # If the y difference is large enough, the current dot belongs to a new line
-                dots[-1].append(boxes[b][0])
-                dots.append([])  # Start a new line of dots
-                
-                # If the number of dot lines is a multiple of 3, and the current line is empty, add another empty line
-                if len(dots) % 3 == 0 and not dots[-1]:
-                    dots.append([])
 
 def map_letters(boundingBoxes, diameter, vertical_space, linesV):
     # Create a copy of boundingBoxes and add a large placeholder value at the end
