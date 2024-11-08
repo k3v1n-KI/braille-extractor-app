@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Recorder</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="text-center">
+            {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for msg in messages %}
+                                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                <strong>{{msg}}</strong>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+            {% endwith %}
+            <h3>Record Your Voice</h3>
+            <p>Click "Record" to start and stop recording, then upload the audio.</p>
+
+            <!-- Record Button -->
+            <button id="recordButton" class="btn btn-primary">Record</button>
+            
+            <!-- Upload Form -->
+            <form id="uploadForm" method="post" enctype="multipart/form-data" style="display: none;">
+                <input type="file" id="audioFile" name="audioFile" style="display: none;">
+                <button type="submit" class="btn btn-success mt-3">Upload Recording</button>
+            </form>
+        </div>
+        {% if wav_file_path %}
+            <div id="resultSection" class="mt-4">
+                <!-- Audio Recording -->
+                <h5 class="mt-4">Listen to your recording</h5>
+                <audio id="audioPlayer" controls class="w-100">
+                    <source id="audioSource" src="{{wav_file_path}}" type="audio/mp3" autoplay>
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+            <br/>
+            <br/>
+        {% endif %}
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+
+        // Get references to elements
+        const recordButton = document.getElementById('recordButton');
+        const uploadForm = document.getElementById('uploadForm');
+        const audioFileInput = document.getElementById('audioFile');
+
+        // Handle Record Button Click
+        recordButton.addEventListener('click', async () => {
+            if (!mediaRecorder || mediaRecorder.state === "inactive") {
+                // Start recording
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = event => audioChunks.push(event.data);
+                
+                mediaRecorder.onstop = async () => {
+                    // Create audio blob from chunks
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    const audioFile = new File([audioBlob], "recording.webm", { type: 'audio/webm' });
+
+                    // Set the file to the hidden input to prepare it for upload
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(audioFile);
+                    audioFileInput.files = dataTransfer.files;
+
+                    // Show the upload form after recording
+                    uploadForm.style.display = 'block';
+                    recordButton.textContent = 'Record';
+                };
+
+                audioChunks = [];
+                mediaRecorder.start();
+                recordButton.textContent = 'Stop Recording';
+            } else {
+                // Stop recording
+                mediaRecorder.stop();
+            }
+        });
+    </script>
+</body>
+</html>
