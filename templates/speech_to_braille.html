@@ -1,57 +1,59 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Recorder</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container mt-5">
-        <div class="text-center">
-            {% with messages = get_flashed_messages() %}
-                        {% if messages %}
-                            {% for msg in messages %}
-                                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                <strong>{{msg}}</strong>
-                                </div>
-                            {% endfor %}
-                        {% endif %}
-            {% endwith %}
-            <h3>Record Your Voice</h3>
-            <p>Click "Record" to start and stop recording, then upload the audio.</p>
-
-            <!-- Record Button -->
-            <button id="recordButton" class="btn btn-primary">Record</button>
-            
-            <!-- Upload Form -->
-            <form id="uploadForm" method="post" enctype="multipart/form-data" style="display: none;">
-                <input type="file" id="audioFile" name="audioFile" style="display: none;">
-                <button type="submit" class="btn btn-success mt-3">Upload Recording</button>
-            </form>
+{% extends "base.html" %}
+{% block title %}Speech to Braille{% endblock %}
+{% block body %}
+    <div class="card">
+        <div class="card-header text-center bg-primary text-white">
+            <h3>Braille Audio Transcriber</h3>
         </div>
-        {% if wav_file_path %}
-            <div id="resultSection" class="mt-4">
-                <!-- Audio Recording -->
-                <h5 class="mt-4">Listen to your recording</h5>
-                <audio id="audioPlayer" controls class="w-100">
-                    <source id="audioSource" src="{{wav_file_path}}" type="audio/mp3" autoplay>
-                    Your browser does not support the audio element.
-                </audio>
-
-                <!-- English Translation from Recording -->
-                <h5 class="mt-4">English Translation</h5>
-                <p id="englishText" class="border p-3 rounded bg-light">{{ text_from_wav_file }}</p>
-
-                <!-- Extracted Braille Text from English Text -->
-                <h5 class="mt-4">Extracted Braille Text</h5>
-                <p id="brailleText" class="border p-3 rounded bg-light">{{ braille_from_text }}</p>
+        <div class="card-body">
+            <div class="text-center">
+                {% with messages = get_flashed_messages(with_categories=True) %}
+                    {% if messages %}
+                        {% for cat, msg in messages %}
+                            <div class="alert alert-{{cat}} alert-dismissible fade show" role="alert">
+                                <strong>{{msg}}</strong>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+                <h3>Record Your Voice</h3>
+                <p>Click "Record" to start and stop recording, then upload the audio.</p>
+        
+                <!-- Record Button -->
+                <button id="recordButton" class="btn btn-primary">Record</button>
+                
+                <!-- Upload Form -->
+                <form id="uploadForm" method="post" enctype="multipart/form-data" style="display: none;">
+                    <input type="file" id="audioFile" name="audioFile" style="display: none;">
+                    <button type="submit" class="btn btn-success mt-3">Upload Recording</button>
+                </form>
             </div>
-            <br/>
-            <br/>
-        {% endif %}
+            {% if wav_file_path %}
+                <div id="resultSection" class="mt-4">
+                    <!-- Audio Recording -->
+                    <h5 class="mt-4">Listen to your recording</h5>
+                    <audio id="audioPlayer" controls class="w-100">
+                        <source id="audioSource" src="{{wav_file_path}}" type="audio/mp3" autoplay>
+                        Your browser does not support the audio element.
+                    </audio>
+        
+                    <!-- English Translation from Recording -->
+                    <h5 class="mt-4">English Translation</h5>
+                    <p id="englishText" class="border p-3 rounded bg-light">{{ text_from_wav_file }}</p>
+        
+                    <!-- Extracted Braille Text from English Text -->
+                    <h5 class="mt-4">Extracted Braille Text</h5>
+                    <p id="brailleText" class="border p-3 rounded bg-light">{{ braille_from_text }}</p>
+                </div>
+                <br/>
+                <br/>
+            {% endif %}
+        </div>
+        <div class="card-footer text-center text-muted">
+            <small>Please speak english and in a clear tone and slow cadence for it to be properly transcribed.</small>
     </div>
-
+{% endblock %}
+{% block script %}
     <script>
         let mediaRecorder;
         let audioChunks = [];
@@ -94,5 +96,4 @@
             }
         });
     </script>
-</body>
-</html>
+{% endblock %}

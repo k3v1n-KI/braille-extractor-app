@@ -1,76 +1,63 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Braille Text Extractor</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-</head>
-<body>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    {% with messages = get_flashed_messages() %}
-                                {% if messages %}
-                                    {% for msg in messages %}
-                                        <div class="alert alert-success alert-dismissible fade show" role="alert">
-                                        <strong>{{msg}}</strong>
-                                        </div>
-                                    {% endfor %}
-                                {% endif %}
-                    {% endwith %}
-                    <div class="card-header text-center bg-primary text-white">
-                        <h3>Braille Text Extractor</h3>
-                    </div>
-                    <div class="card-body">
-                        <form method="post" enctype="multipart/form-data">
-                            <div class="form-group">
-                                <label for="brailleImage">Select Braille Image</label>
-                                <input type="file" class="form-control-file" id="brailleImage" name="brailleImage" accept="image/*" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary btn-block">Extract Braille Text</button>
-                        </form>
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block body %}
+<main role="main">
 
-                    </div>
-                    <div class="card-footer text-center text-muted">
-                        <small>Upload a clear image of Braille text to extract it and translate to English.</small>
-                    </div>
-                    {% if image %}
-                    <div id="resultSection" class="mt-4">
-                        <!-- Uploaded Image Display -->
-                        <h5 class="text-center">Uploaded Image</h5>
-                        <div class="text-center">
-                            <img id="uploadedImage" src="static/images/{{image}}" alt="Uploaded Braille Image" class="img-fluid rounded" style="max-width: 100%; height: auto;">
-                        </div>
+    <section class="jumbotron text-center">
+      <div class="container">
+        <h1 class="jumbotron-heading">Braille Tools</h1>
+        <p class="lead text-muted">Please use the tools provided below to convert your audio, image or text braille to english. The tools provides a limited albiet solid user experience to all people interested in Braille.</p>
+        <p>
+          <a href="/braille_image_to_text" class="btn btn-primary my-2">Image to Braille</a>
+          <a href="/speech_to_braille" class="btn btn-secondary my-2">Audio to Braille</a>
+        </p>
+      </div>
+    </section>
 
-                        <!-- Extracted Braille Text -->
-                        <h5 class="mt-4">Extracted Braille Text</h5>
-                        <p id="brailleText" class="border p-3 rounded bg-light">{{ braille_text }}</p>
+    <div class="album py-5 bg-light">
+      <div class="container">
 
-                        <!-- English Translation of Braille -->
-                        <h5 class="mt-4">English Translation</h5>
-                        <p id="englishText" class="border p-3 rounded bg-light">{{ english_text }}</p>
-
-                        <!-- Audio of English Translation -->
-                        <h5 class="mt-4">Listen to Translation</h5>
-                        <audio id="audioPlayer" controls class="w-100">
-                            <source id="audioSource" src="static/audio/{{image}}.mp3" type="audio/mp3" autoplay>
-                            Your browser does not support the audio element.
-                        </audio>
-                    </div>
-                    <br/>
-                    <br/>
-                    {% endif %}
+        <div class="row">
+          <div class="col-md-4">
+            <div class="card mb-4 box-shadow">
+              <img class="card-img-top" src="/static/images/image.jpg" alt="Image" style="height: 225px; width: 100%; display: block;" data-holder-rendered="true">
+              <div class="card-body">
+                <p class="card-text">You can upload an image to convert the braille text in that image to english text or dictate it using audio.</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <a href="/braille_image_to_text" class="btn btn-primary my-2">Image to Braille</a>
+                  <small class="text-muted">Image</small>
                 </div>
-
+              </div>
             </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card mb-4 box-shadow">
+              <img class="card-img-top" src="/static/images/speak.jpg" alt="Speech" style="height: 225px; width: 100%; display: block;" data-holder-rendered="true">
+              <div class="card-body">
+                <p class="card-text">You can speak into a microphone and convert that spoken english dictation to braille text.</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <a href="/speech_to_braille" class="btn btn-primary my-2">Audio to Braille</a>
+                  <small class="text-muted">Speech</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="card mb-4 box-shadow">
+              <img class="card-img-top" src="/static/images/text.jpg" alt="Text" style="height: 225px; width: 100%; display: block;" data-holder-rendered="true">
+              <div class="card-body">
+                <p class="card-text">Here you can type using your keyboard to convert any text to braille or convert copied braille text to english.</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="btn-group">
+                    <a href="/text_to_braille" class="btn btn-primary my-2">Text to Braille</a>
+                  </div>
+                  <small class="text-muted">Text</small>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
     </div>
-
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-    
-    
-</body>
-</html>
+  </main>
+{% endblock %}

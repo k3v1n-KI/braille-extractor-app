@@ -62,9 +62,9 @@ def rearrange_contours(contours, original, diameter):
 
     xs = [bin_coordinates(i) for i in [0, 1]][0]
 
-    contours, bounding_boxes = zip(*sorted(zip(contours, bounding_boxes), key=lambda b: b[1][1] * len(original) + b[1][0]))
+    _, bounding_boxes = zip(*sorted(zip(contours, bounding_boxes), key=lambda b: b[1][1] * len(original) + b[1][0]))
 
-    return contours, bounding_boxes, xs
+    return bounding_boxes, xs
 
 
 def fetch_dots(contours, diameter):
@@ -81,36 +81,47 @@ def fetch_dots(contours, diameter):
 
 
 def calculate_dot_size(contours):
-  boundingBoxes = [list(cv2.boundingRect(c)) for c in contours]
-  c = Counter([i[2] for i in boundingBoxes])
-  mode = c.most_common(1)[0][0]
-  if mode > 1:
-    diameter = mode
-  else:
-    diameter = c.most_common(2)[1][0]
-  return diameter
-
-
-def project_contours(questioncontours, original, boundingBoxes):
-  color = (0, 255, 0)
-  i = 0
-  for q in range(len(questioncontours)):
-    cv2.drawContours(original, questioncontours[q], -1, color, 3)
-    cv2.putText(original, str(i), (boundingBoxes[q][0] + boundingBoxes[q][2]//2, boundingBoxes[q][1] + boundingBoxes[q][3]//2), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 2)
-    i += 1
+    # Calculate the bounding boxes of each contour
+    boundingBoxes = [list(cv2.boundingRect(c)) for c in contours]
+    
+    # Count the occurrences of each width (index 2 in bounding box) to find the most common one
+    c = Counter([i[2] for i in boundingBoxes])
+    
+    # Get the mode (most common width value)
+    mode = c.most_common(1)[0][0]
+    
+    # If mode is greater than 1, assume it's the dot diameter
+    # Otherwise, fall back to the second most common width if the most common is a single occurrence
+    if mode > 1:
+        diameter = mode
+    else:
+        diameter = c.most_common(2)[1][0]
+    
+    # Return the calculated diameter
+    return diameter
 
 
 def spacing(boundingBoxes, diameter):
+    # Initialize lists to store spacing values in x and y directions
     space_x = []
     space_y = []
     
+    # Extract the x and y coordinates of the bounding boxes
     coordinates = [[box[0], box[1]] for box in boundingBoxes]
     
+    # Calculate the spacing between consecutive coordinates
     for i in range(len(coordinates) - 1):
-      c_x = coordinates[i + 1][0] - coordinates[i][0]
-      c_y = coordinates[i + 1][1] - coordinates[i][1]
-      if c_x > (diameter // 2): space_x.append(c_x)
-      if c_y > (diameter // 2): space_y.append(c_y)
+        # Difference in x and y coordinates
+        c_x = coordinates[i + 1][0] - coordinates[i][0]
+        c_y = coordinates[i + 1][1] - coordinates[i][1]
+        
+        # If spacing in x direction is greater than half the diameter, add to space_x list
+        if c_x > (diameter // 2): space_x.append(c_x)
+        
+        # If spacing in y direction is greater than half the diameter, add to space_y list
+        if c_y > (diameter // 2): space_y.append(c_y)
+    
+    # Remove duplicates and sort the spacing lists
     return sorted(list(set(space_x))), sorted(list(set(space_y)))
 
 
@@ -169,43 +180,87 @@ def calculate_spacing(boundingBoxes, diameter, xs):
     
   return linesV, vertical_space
 
+def map_letters(boundingBoxes, diameter, vertical_space, linesV):
+    # Convert bounding boxes to a list and add a large placeholder at the end
+    boxes = list(boundingBoxes)
+    boxes.append((100000, 0))  # A dummy bounding box to handle edge case
+    
+    # Initialize the list of dots as an empty list inside a list
+    dots = [[]]
+    
+    # Determine the minimum y-diameter based on vertical spacing
+    for y in sorted(list(set(vertical_space))):
+        if y > 1.3 * diameter:  # If vertical spacing exceeds 1.3 * diameter
+            min_y_diameter = y * 1.5  # Set the minimum y-diameter to 1.5 times the spacing
+            break  # Exit the loop once the condition is satisfied
+    
+    # Fetching dots line by line by comparing bounding box positions
+    for b in range(len(boxes) - 1):
+        if boxes[b][0] < boxes[b+1][0]:  # If the current box is to the left of the next one
+            dots[-1].append(boxes[b][0])  # Add the x-coordinate of the current box to the current line of dots
+        else:
+            # If the difference in y-coordinate between consecutive boxes is less than min_y_diameter,
+            # it means the dots are part of the same line, so continue adding to the same line
+            if abs(boxes[b+1][1] - boxes[b][1]) < min_y_diameter:
+                dots[-1].append(boxes[b][0])
+                dots.append([])  # Start a new line of dots
+            else:
+                # If the y difference is large enough, the current dot belongs to a new line
+                dots[-1].append(boxes[b][0])
+                dots.append([])  # Start a new line of dots
+                
+                # If the number of dot lines is a multiple of 3, and the current line is empty, add another empty line
+                if len(dots) % 3 == 0 and not dots[-1]:
+                    dots.append([])
 
 def map_letters(boundingBoxes, diameter, vertical_space, linesV):
-  boxes = list(boundingBoxes)
-  boxes.append((100000, 0))
+    # Create a copy of boundingBoxes and add a large placeholder value at the end
+    boxes = list(boundingBoxes)
+    boxes.append((100000, 0))
 
-  dots = [[]]
-  for y in sorted(list(set(vertical_space))):
-    if y > 1.3 * diameter:
-      min_y_diameter = y*1.5
-      break
+    # Initialize dots as a list containing an empty line for storing detected lines of dots
+    dots = [[]]
 
-  # Fetching dots line by line
-  for b in range(len(boxes) - 1):
-    if boxes[b][0] < boxes[b+1][0]:
-        dots[-1].append(boxes[b][0])
-    else:
-      if abs(boxes[b+1][1] - boxes[b][1]) < min_y_diameter:
-        dots[-1].append(boxes[b][0])
-        dots.append([])
-      else:
-        dots[-1].append(boxes[b][0])
-        dots.append([])
-        if len(dots)%3 == 0 and not dots[-1]:
-          dots.append([])
+    # Determine the minimum y-spacing required for dots to be considered part of a new line
+    for y in sorted(list(set(vertical_space))):
+        if y > 1.3 * diameter:  # Check if spacing exceeds 1.3 * diameter
+            min_y_diameter = y * 1.5  # Set minimum y-distance threshold
+            break
 
     
-  letters = []
-  
-  for row in dots:
-    letter_row = []
-    c = 0
-    for i in range(len(linesV) - 1):
-        letter_row.append(1 if c < len(row) and linesV[i] < row[c] < linesV[i + 1] else 0)
-        c += letter_row[-1]  # Only increment `c` if a dot was matched
-    letters.append(letter_row if row else [0] * (len(linesV) - 1))
+    for b in range(len(boxes) - 1):
+        # If the current box is to the left of the next, it belongs to the same line
+        if boxes[b][0] < boxes[b + 1][0]:
+            dots[-1].append(boxes[b][0])  # Add x-coordinate of current box to current line
+        else:
+            # If y-distance is small enough, consider it the same line, otherwise start a new line
+            if abs(boxes[b + 1][1] - boxes[b][1]) < min_y_diameter:
+                dots[-1].append(boxes[b][0])
+                dots.append([])  # Begin a new line of dots
+            else:
+                dots[-1].append(boxes[b][0])
+                dots.append([])  # Begin a new line of dots
+                # Ensure every 3 lines are grouped by adding an extra empty line if needed
+                if len(dots) % 3 == 0 and not dots[-1]:
+                    dots.append([])
+
+    # Convert lines of x-coordinates into binary representation based on vertical lines (linesV)
+    letters = []
     
-  return letters
+    for row in dots:
+        letter_row = []
+        c = 0  # Index for tracking dots within each row
+        for i in range(len(linesV) - 1):
+            # Check if the dot falls between two vertical lines in linesV
+            letter_row.append(1 if c < len(row) and linesV[i] < row[c] < linesV[i + 1] else 0)
+            # Increment c if a dot was successfully matched within the current vertical line section
+            c += letter_row[-1]
+        
+        # If row contains dots, add letter_row; otherwise, append a row of 0s (no dots)
+        letters.append(letter_row if row else [0] * (len(linesV) - 1))
+
+    return letters
+
 
 def translate(letters):
   # Aplhabets represented by a matrix of darkened dots
@@ -224,7 +279,8 @@ def translate(letters):
   letters = np.array([np.array(l) for l in letters])
 
   ans  = ''
-
+  
+  # Mapping dot number values to braille characters
   for r in range(0, len(letters), 3):
     for c in range(0, len(letters[0]), 2):
       f = letters[r:r+3,c:c+2].flatten()
@@ -233,9 +289,12 @@ def translate(letters):
         if ans[-1] != ' ': ans += ' '
       elif f in braille_keys:
         if f == '6' or f == '26':
+          # Removing capitalization character
           continue
+        # Adding a normal character to final braille text
         ans += braille[f]
       else:
+        # If character is not found ? is sent to text
         ans += '?'
     if ans[-1] != ' ': ans += ' '
   
@@ -248,8 +307,7 @@ def driver(path):
     diameter = calculate_dot_size(contours)
     dotcontours = fetch_dots(contours, diameter)
 
-    questioncontours, boundingBoxes, xs = rearrange_contours(dotcontours, original, diameter)
-    project_contours(questioncontours, original, boundingBoxes)
+    boundingBoxes, xs = rearrange_contours(dotcontours, original, diameter)
 
     linesV, vertical_space = calculate_spacing(boundingBoxes, diameter, xs)
 

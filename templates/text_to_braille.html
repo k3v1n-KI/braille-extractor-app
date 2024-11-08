@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Text to Braille{% endblock %}
+{% block body %}
+<div class="card">
+    {% with messages = get_flashed_messages(with_categories=True) %}
+                {% if messages %}
+                    {% for cat, msg in messages %}
+                        <div class="alert alert-{{cat}} alert-dismissible fade show" role="alert">
+                            <strong>{{msg}}</strong>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+    {% endwith %}
+    <div class="card-header text-center bg-primary text-white">
+        <h3>Braille Text Conversion</h3>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            <div class="form-group">
+                <label for="text">Type your text</label>
+                <textarea class="form-control" id="text" name="text" required></textarea>
+            </div>
+            <div class="form-group">
+                <label for="select-type">Select conversion type</label>
+                <select class="form-select form-select-lg" id="select-type" name="type" aria-label="conversion-select">
+                    <option selected value="0">Text to Braille</option>
+                    <option value="1">Braille to Text</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Convert Text</button>
+        </form>
+
+    </div>
+    <div class="card-footer text-center text-muted">
+        <small>Upload a clear image of Braille text to extract it and translate to English.</small>
+    </div>
+    {% if text %}
+    <div id="resultSection" class="card" class="mt-4">
+        <div class="card-body">
+            <p>{{ text }}</p>
+        </div>
+    </div>
+    <br/>
+    <br/>
+    {% endif %}
+</div>
+{% endblock %}

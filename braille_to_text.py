@@ -35,5 +35,5 @@ def braille_to_text(braille_text):
 
 def text_to_braille(text):
     text_to_braille = {v: k for k, v in braille_to_english.items()}
-    return [text_to_braille[ch] for ch in text]
+    return ''.join([text_to_braille[ch.lower()] for ch in text])
 
