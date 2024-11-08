@@ -74,8 +74,8 @@
                 
                 mediaRecorder.onstop = async () => {
                     // Create audio blob from chunks
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                    const audioFile = new File([audioBlob], "recording.webm", { type: 'audio/webm' });
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    const audioFile = new File([audioBlob], "recording.wav", { type: 'audio/wav' });
 
                     // Set the file to the hidden input to prepare it for upload
                     const dataTransfer = new DataTransfer();

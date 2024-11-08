@@ -1,6 +1,5 @@
 from flask import Flask, render_template, request, flash
 from braille_image_to_text import driver as braille_image_to_text
-import os
 from pydub import AudioSegment
 from braille_to_text import braille_to_text
 from text_to_speech import text_to_speech
@@ -78,27 +77,22 @@ def speech_to_braille_page():
     if request.method == "POST":
         audio_file = request.files['audioFile']
         file_name = audio_file.filename
-        webm_file_path = f"static/audio/{file_name}"
-        audio_file.save(webm_file_path)
+        wav_file_path = f"static/audio/{file_name}"
+        audio_file.save(wav_file_path)
         
-        # Convert .webm to .wav using pydub
-        wav_file_path = os.path.splitext(webm_file_path)[0] + ".wav"
         try:
-            # Load the .webm file
-            audio = AudioSegment.from_file(webm_file_path, format="webm")
             # Export the audio as .wav
-            audio.export(wav_file_path, format="wav")
             flash("File uploaded successfully", "success")
-            # Delete the .webm file after conversion
-            os.remove(webm_file_path)
+            
             # Convert speech to text
             text_from_wav_file = get_large_audio_transcription_fixed_interval(wav_file_path)
             
             # Convert text to braille
             braille_from_text = text_to_braille(text_from_wav_file)
+            return render_template("speech_to_braille.html", wav_file_path=wav_file_path, text_from_wav_file=text_from_wav_file, braille_from_text=braille_from_text)
         except Exception as e:
             flash(f"Error converting to wav file: {e}", "danger")
-        return render_template("speech_to_braille.html", wav_file_path=wav_file_path, text_from_wav_file=text_from_wav_file, braille_from_text=braille_from_text)
+        return render_template("speech_to_braille.html")
         
     return render_template("speech_to_braille.html")
 
