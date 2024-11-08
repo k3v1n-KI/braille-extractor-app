@@ -166,5 +166,5 @@ cython_debug/
 *.pdf
 *.txt
 *.mp3
-text_to_braille.py
-./'Assignment 2 Screenshots'
+Assignment 2 Screenshots
+audio-fixed-chunks

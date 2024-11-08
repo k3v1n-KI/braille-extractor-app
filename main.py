@@ -3,6 +3,8 @@ from flask import Flask, render_template, request, flash, redirect, url_for
 from pydub import AudioSegment
 from braille_to_text import braille_to_text
 from text_to_speech import text_to_speech
+from speech_to_text import get_large_audio_transcription_fixed_interval
+from text_to_braille import English2Braiile
 
 app = Flask(__name__)
 app.secret_key = "Something Ominous"
@@ -49,10 +51,14 @@ def speech_to_braille():
             flash("File uploaded successfully", "success")
             # Delete the .webm file after conversion
             os.remove(webm_file_path)
+            # Convert speech to text
+            text_from_wav_file = get_large_audio_transcription_fixed_interval(wav_file_path)
             
+            # Convert text to braille
+            braille_from_text = English2Braiile(text_from_wav_file)
         except Exception as e:
             flash(f"Error converting to wav file: {e}", "error")
-        return render_template("speech_to_braille.html", wav_file_path=wav_file_path)
+        return render_template("speech_to_braille.html", wav_file_path=wav_file_path, text_from_wav_file=text_from_wav_file, braille_from_text=braille_from_text)
         
     return render_template("speech_to_braille.html")
 

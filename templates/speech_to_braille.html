@@ -38,6 +38,14 @@
                     <source id="audioSource" src="{{wav_file_path}}" type="audio/mp3" autoplay>
                     Your browser does not support the audio element.
                 </audio>
+
+                <!-- English Translation from Recording -->
+                <h5 class="mt-4">English Translation</h5>
+                <p id="englishText" class="border p-3 rounded bg-light">{{ text_from_wav_file }}</p>
+
+                <!-- Extracted Braille Text from English Text -->
+                <h5 class="mt-4">Extracted Braille Text</h5>
+                <p id="brailleText" class="border p-3 rounded bg-light">{{ braille_from_text }}</p>
             </div>
             <br/>
             <br/>
