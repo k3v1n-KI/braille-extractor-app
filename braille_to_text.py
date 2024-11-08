@@ -13,8 +13,8 @@ braille_to_english = {
     '⠼⠋': '6', '⠼⠛': '7', '⠼⠓': '8', '⠼⠊': '9', '⠼⠚': '0',
     
     # Punctuation (basic)
-    '.': '⠲', ',': '⠂', '?': '⠦', '!': '⠖', ';': '⠆', ':': '⠒',
-    '-': '⠤', "'": '⠄', '"': '⠶', '(': '⠷', ')': '⠾'
+    '⠲': '.', '⠂': ',', '⠦': '?', '⠖': '!', '⠆': ';', '⠒': ':',
+    '⠤': '-', '⠄': "'", '⠶': '"', '⠷': '(', '⠾': ')', '#': "⠐", '`': '⠄'
 }
 
 def braille_to_text(braille_text):
@@ -33,7 +33,7 @@ def braille_to_text(braille_text):
             i += 1
     return english_text
 
-# # Sample Braille text: "Leaves turn brown and yellow in the fall. Add the sum to the product of these three."
-# braille_text = "⠠⠇⠑⠁⠧⠑⠎ ⠞⠥⠗⠝ ⠃⠗⠕⠺⠝ ⠁⠝⠙ ⠽⠑⠇⠇⠕⠺ ⠊⠝ ⠞⠓⠑ ⠋⠁⠇⠇. ⠠⠁⠙⠙ ⠞⠓⠑ ⠎⠥⠍ ⠞⠕ ⠞⠓⠑ ⠏⠗⠕⠙⠥⠉⠞ ⠕⠋ ⠞⠓⠑⠎⠑ ⠞⠓⠗⠑⠑." 
-# english_text = braille_to_text(braille_text)
-# print("English text:", english_text)
+def text_to_braille(text):
+    text_to_braille = {v: k for k, v in braille_to_english.items()}
+    return [text_to_braille[ch] for ch in text]
+

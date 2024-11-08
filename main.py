@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, flash
 from braille_image_to_text import driver as braille_image_to_text
+from braille_to_text import braille_to_text
 from text_to_speech import text_to_speech
 from time import time
 
@@ -23,15 +24,19 @@ def home():
             
             flash("Image file processed successfully!", "success")
             
+            # Convert image to braille text
+            braille_text = braille_image_to_text(file_path)
+            
             # Convert braille text to english
-            english_text = braille_image_to_text(file_path)
+            english_text = braille_to_text(braille_text)
             
             # Create and save an mp3 file of the text
             text_to_speech(english_text, file_name)
             
             # Send all info to the web application
-            return render_template("index.html", image=file_name, english_text=english_text)
-        except:
+            return render_template("index.html", image=file_name, braille_text=braille_text, english_text=english_text)
+        except Exception as e:
+            print(e)
             flash("Problem processing image file", "error")
 
     return render_template("index.html")
