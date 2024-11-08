@@ -3,7 +3,6 @@ from skimage import io
 import numpy as np
 import imutils
 import cv2
-import re
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -74,9 +73,8 @@ def fetch_dots(contours, diameter):
     (_, __, w, h) = cv2.boundingRect(c)
     ar = w / float(h)
 
-    # in order to label the contour as a question, region
-    # should be sufficiently wide, sufficiently tall, and
-    # have an aspect ratio approximately equal to 1
+    # To label the contour as a question mark, the region should 
+    # be wide and tall enough, with an aspect ratio close to 1
     if diameter * 0.8 <= w <= diameter * 1.2 and 0.8 <= ar <= 1.2:
       questioncontours.append(c)    
   return questioncontours
@@ -119,8 +117,7 @@ def spacing(boundingBoxes, diameter):
 def calculate_spacing(boundingBoxes, diameter, xs):
   horizontal_space, vertical_space = spacing(boundingBoxes, diameter)
 
-  # smallest x-serapation (between two adjacent dots in a letter)
-
+  # Minimum x spacing (between two adjacent dots)
   dist_1 = horizontal_space[0]
   dist_2 = 0
   dist_3 = 0
