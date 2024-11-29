@@ -167,5 +167,4 @@ cython_debug/
 *.txt
 !requirements.txt
 *.mp3
-Assignment 2 Screenshots
 audio-fixed-chunks
